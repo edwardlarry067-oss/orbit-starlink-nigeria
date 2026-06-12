@@ -1,0 +1,58 @@
+modules = ["nodejs-20", "web", "bash"]
+[agent]
+expertMode = true
+stack = "BEST_EFFORT_FALLBACK"
+
+[nix]
+channel = "stable-25_05"
+
+[[ports]]
+localPort = 3001
+externalPort = 80
+
+[[ports]]
+localPort = 5000
+externalPort = 5000
+
+[[ports]]
+localPort = 5001
+externalPort = 3001
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash start.sh"
+waitForPort = 5000
+
+[userenv]
+
+[userenv.shared]
+NODE_ENV = "development"
+LOG_LEVEL = "info"
+APP_URL = "https://orbit-future--christianacade1.replit.app"
+PORT = "3001"
+EMAIL_FROM = "managementstarlinkhq@gmail.com"
+PAYSTACK_CURRENCY = "USD"
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "start.sh"]
+build = ["bash", "-c", "cd artifacts && pnpm install --frozen-lockfile && cd api-server && pnpm run build && cd ../spacex-starlink && pnpm run build"]

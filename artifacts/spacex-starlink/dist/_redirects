@@ -1,0 +1,5 @@
+# Proxy all API calls server-side to the Replit backend (no CORS issues)
+/api/*  https://space-x--spacexstarlinkm.replit.app/api/:splat  200
+
+# SPA catch-all — serve index.html for all client-side routes
+/*      /index.html  200

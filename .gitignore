@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+artifacts/node_modules/
+artifacts/**/node_modules/
+
+# Build outputs
+dist/
+artifacts/api-server/dist/
+artifacts/spacex-starlink/dist/
+
+# Environment files — NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+*.env
+
+# Replit internals
+.replit.nix
+.upm/
+.cache/
+.local/state/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,16 @@
+{
+  "name": "workspace",
+  "version": "1.0.0",
+  "description": "SpaceX Starlink subscription platform.",
+  "main": "index.js",
+  "scripts": {
+    "build": "npm install -g pnpm && cd artifacts && pnpm install --frozen-lockfile && pnpm --filter @workspace/api-server run build && pnpm --filter @workspace/spacex-starlink run build && cp -r spacex-starlink/dist ../dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@replit/vite-plugin-cartographer": "^0.5.5",
+    "serverless-http": "^4.0.0"
+  }
+}

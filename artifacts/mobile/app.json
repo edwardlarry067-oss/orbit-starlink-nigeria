@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "ORBITFUTURE",
+    "slug": "orbitfuture",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#000000",
+    "primaryColor": "#00D4FF",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#000000"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.orbitfuture.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Not used",
+        "NSLocationWhenInUseUsageDescription": "Not used"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#000000"
+      },
+      "package": "com.orbitfuture.app",
+      "permissions": []
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "orbitfuture",
+    "plugins": ["expo-router"],
+    "extra": {
+      "apiUrl": "https://space-x--spacexstarlinkm.replit.app"
+    }
+  }
+}

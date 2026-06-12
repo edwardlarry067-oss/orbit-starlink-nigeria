@@ -1,0 +1,21 @@
+[build]
+  command = "cd artifacts && npm install -g pnpm 2>/dev/null; pnpm install --frozen-lockfile && pnpm --filter @workspace/spacex-starlink run build"
+  publish = "artifacts/spacex-starlink/dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  # Leave VITE_API_URL empty — frontend uses relative /api/* paths
+  # Netlify proxies those server-side to the Replit backend via _redirects
+  VITE_API_URL = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
