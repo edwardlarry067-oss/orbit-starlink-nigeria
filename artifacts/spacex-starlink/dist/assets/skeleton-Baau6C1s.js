@@ -1,0 +1,1 @@
+import{j as s}from"./react-vendor-C5zQ7nL4.js";import{c as n}from"./index-CNDIRgWT.js";function a({className:e,...r}){return s.jsxDEV("div",{className:n("animate-pulse rounded-md bg-primary/10",e),...r},void 0,!1,{fileName:"/home/runner/workspace/artifacts/spacex-starlink/src/components/ui/skeleton.tsx",lineNumber:8,columnNumber:5},this)}export{a as S};
