@@ -2,6 +2,7 @@
   "name": "spacex-starlink-workspace",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.26.1",
   "engines": {
     "node": ">=20.0.0"
   }
