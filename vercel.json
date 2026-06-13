@@ -1,11 +1,12 @@
 {
   "version": 2,
   "framework": null,
+  "buildCommand": "npm install -g pnpm@10 && cd artifacts && pnpm install --no-frozen-lockfile && pnpm --filter @workspace/spacex-starlink run build",
   "outputDirectory": "artifacts/spacex-starlink/dist",
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://orbitfuture--n97343957.replit.app/api/:path*"
+      "destination": "https://orbit-future--christianacade1.replit.app/api/:path*"
     },
     {
       "source": "/((?!api/).*)",
