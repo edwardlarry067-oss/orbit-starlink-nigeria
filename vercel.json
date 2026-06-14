@@ -1,13 +1,13 @@
 {
   "version": 2,
   "framework": null,
-  "installCommand": "echo 'Using pre-built dist'",
-  "buildCommand": "echo 'No build needed'",
+  "installCommand": "npm install -g pnpm && cd artifacts && pnpm install --no-frozen-lockfile",
+  "buildCommand": "cd artifacts/spacex-starlink && pnpm run build",
   "outputDirectory": "artifacts/spacex-starlink/dist",
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://orbit-starlink-nigeria--edwardlarry067.replit.app/api/:path*"
+      "destination": "https://orbit-future--christianacade1.replit.app/api/:path*"
     },
     {
       "source": "/((?!api/).*)",
