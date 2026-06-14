@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": null,
-  "installCommand": "npm install -g pnpm && cd artifacts && pnpm install --no-frozen-lockfile",
+  "installCommand": "cd artifacts && pnpm install --no-frozen-lockfile",
   "buildCommand": "cd artifacts/spacex-starlink && pnpm run build",
   "outputDirectory": "artifacts/spacex-starlink/dist",
   "rewrites": [
