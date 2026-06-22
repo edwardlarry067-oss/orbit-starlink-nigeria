@@ -4,11 +4,13 @@ import { usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import jwt from "jsonwebtoken";
 import { createHash } from "node:crypto";
+import bcrypt from "bcrypt";
 import { JWT_SECRET } from "../middlewares/adminAuth";
 import { sendWelcomeEmail } from "../lib/email";
 
 const router = Router();
 const JWT_EXPIRES = "30d";
+const BCRYPT_ROUNDS = 12;
 
 // ── In-memory rate limiter ─────────────────────────────────────────────────────
 const rateLimitStore = new Map<string, { attempts: number; resetAt: number }>();
@@ -41,8 +43,37 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000);
 
-function hashPassword(password: string): string {
+// ── Password helpers ───────────────────────────────────────────────────────────
+
+// Legacy SHA-256 scheme (existing users). Used only for migration detection.
+function legacyHash(password: string): string {
   return createHash("sha256").update(password + JWT_SECRET).digest("hex");
+}
+
+// New bcrypt scheme for all new registrations.
+async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, BCRYPT_ROUNDS);
+}
+
+// Verify a password against whichever scheme was used, and transparently
+// upgrade legacy SHA-256 hashes to bcrypt on first successful login.
+// Returns { valid: boolean; newHash: string | null } — newHash is set when
+// an upgrade should be written back to the DB.
+async function verifyPassword(
+  password: string,
+  stored: string
+): Promise<{ valid: boolean; newHash: string | null }> {
+  const isBcrypt = stored.startsWith("$2b$") || stored.startsWith("$2a$");
+  if (isBcrypt) {
+    const valid = await bcrypt.compare(password, stored);
+    return { valid, newHash: null };
+  }
+  // Legacy SHA-256 path — verify, then re-hash with bcrypt so the user is
+  // silently upgraded on next login without requiring a password reset.
+  const valid = stored === legacyHash(password);
+  if (!valid) return { valid: false, newHash: null };
+  const newHash = await hashPassword(password);
+  return { valid: true, newHash };
 }
 
 function signToken(payload: object): string {
@@ -121,19 +152,17 @@ router.post("/auth/register", rateLimit(5, 15 * 60 * 1000), async (req, res): Pr
       .values({
         name,
         email,
-        passwordHash: hashPassword(password),
+        passwordHash: await hashPassword(password),
         phone: phone ?? null,
         address: address ?? null,
       })
       .returning();
 
-    // Assign account number (ORB-XXXX format)
     const accountNumber = `ORB-${String(user.id).padStart(4, "0")}`;
     await db.update(usersTable).set({ accountNumber }).where(eq(usersTable.id, user.id));
 
     const token = signToken({ userId: user.id, email: user.email });
 
-    // Send welcome email asynchronously — don't block the response
     sendWelcomeEmail({ customerName: user.name, customerEmail: user.email }).catch(() => {});
 
     res.status(201).json({
@@ -171,9 +200,20 @@ router.post("/auth/login", rateLimit(10, 15 * 60 * 1000), async (req, res): Prom
     }
 
     const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email)).limit(1);
-    if (!user || user.passwordHash !== hashPassword(password)) {
+    if (!user) {
       res.status(401).json({ error: "Invalid email or password" });
       return;
+    }
+
+    const { valid, newHash } = await verifyPassword(password, user.passwordHash);
+    if (!valid) {
+      res.status(401).json({ error: "Invalid email or password" });
+      return;
+    }
+
+    // Transparent bcrypt upgrade for legacy SHA-256 accounts
+    if (newHash) {
+      await db.update(usersTable).set({ passwordHash: newHash }).where(eq(usersTable.id, user.id));
     }
 
     const token = signToken({ userId: user.id, email: user.email });
@@ -256,7 +296,8 @@ router.patch("/auth/me", requireAuth, async (req: any, res): Promise<void> => {
       const currentPassword = typeof rawBody.password === "string" ? rawBody.password : "";
       const newPassword = typeof rawBody.newPassword === "string" ? rawBody.newPassword : "";
 
-      if (!currentPassword || user.passwordHash !== hashPassword(currentPassword)) {
+      const { valid } = await verifyPassword(currentPassword, user.passwordHash);
+      if (!currentPassword || !valid) {
         res.status(400).json({ error: "Current password is incorrect" });
         return;
       }
@@ -268,7 +309,7 @@ router.patch("/auth/me", requireAuth, async (req: any, res): Promise<void> => {
         res.status(400).json({ error: "New password too long" });
         return;
       }
-      updateData.passwordHash = hashPassword(newPassword);
+      updateData.passwordHash = await hashPassword(newPassword);
     }
 
     const [updated] = await db
