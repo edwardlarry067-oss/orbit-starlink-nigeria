@@ -180,10 +180,8 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
 
-  // P1: Validate env vars + load from DB on startup
   validateEnv().catch((e) => logger.warn({ err: e }, "Env validation failed"));
 
-  // P1: Verify DB tables exist, then seed + backfill if needed
   ensureTablesExist().then((ok) => {
     if (ok) {
       seedIfEmpty();
@@ -192,4 +190,21 @@ app.listen(port, (err) => {
       logger.warn("Skipping seed — tables not ready. Run db:push to fix.");
     }
   });
+
+  // ── Keep-alive: self-ping every 14 minutes to prevent sleep ──────────────
+  const selfUrl = (() => {
+    const url = process.env["APP_URL"] ?? process.env["REPLIT_DEV_DOMAIN"];
+    if (!url) return null;
+    return url.startsWith("http") ? url : `https://${url}`;
+  })();
+
+  if (selfUrl) {
+    const pingInterval = 14 * 60 * 1000;
+    setInterval(() => {
+      fetch(`${selfUrl}/api/healthz`)
+        .then(() => logger.debug("Keep-alive self-ping OK"))
+        .catch((e) => logger.debug({ err: e.message }, "Keep-alive self-ping failed (non-critical)"));
+    }, pingInterval);
+    logger.info({ url: selfUrl, intervalMinutes: 14 }, "Keep-alive self-ping scheduled");
+  }
 });
