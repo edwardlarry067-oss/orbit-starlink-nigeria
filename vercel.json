@@ -6,12 +6,22 @@
   "outputDirectory": "artifacts/spacex-starlink/dist",
   "rewrites": [
     {
+      "source": "/api/keep-alive",
+      "destination": "/api/keep-alive"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://orbit-starlink-nigeria--edwardlarry067.replit.app/api/:path*"
     },
     {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/keep-alive",
+      "schedule": "*/10 * * * *"
     }
   ],
   "redirects": [
