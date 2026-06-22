@@ -4,21 +4,26 @@ import { plansTable, subscriptionsTable, walletsTable, walletTransactionsTable }
 import { eq } from "drizzle-orm";
 import { sendSubscriptionConfirmation } from "../lib/email";
 import { createInvoice } from "../lib/invoiceService";
+import { requireAuth } from "./auth";
 
 const router = Router();
 
 // ── Wallet Pay: debit wallet tokens and create subscription directly ──────────
-router.post("/checkout/wallet-pay", async (req, res): Promise<void> => {
+// requireAuth ensures only the authenticated user can spend their own wallet.
+// Email is taken from the verified JWT — never from the request body — so no
+// user can drain another user's wallet by supplying a different email address.
+router.post("/checkout/wallet-pay", requireAuth, async (req: any, res): Promise<void> => {
   try {
-    const { planId, email, name, address } = req.body as {
+    const { planId, name, address } = req.body as {
       planId: number;
-      email: string;
       name: string;
       address?: string;
     };
 
-    if (!planId || !email || !name) {
-      res.status(400).json({ error: "planId, email, and name are required" });
+    const email: string = req.user.email;
+
+    if (!planId || !name) {
+      res.status(400).json({ error: "planId and name are required" });
       return;
     }
 
@@ -81,8 +86,6 @@ router.post("/checkout/wallet-pay", async (req, res): Promise<void> => {
       })
       .returning();
 
-    // Wallet-pay only charges monthly tokens (no hardware) — use isFirstMonth:false
-    // to ensure invoice line items match actual charged amount exactly
     createInvoice({
       userEmail: email,
       subscriptionId: sub.id,
