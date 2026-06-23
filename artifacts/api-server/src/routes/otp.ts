@@ -51,7 +51,7 @@ async function sendOtpEmail(email: string, otp: string, name: string): Promise<b
   if (!resend) return false;
   try {
     const fromEmail = process.env["EMAIL_FROM"] ?? "ORBITFUTURE <noreply@orbitfuture.store>";
-    const { error } = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: fromEmail,
       to: email,
       subject: `Your OrbitFuture Login Code: ${otp}`,
@@ -75,8 +75,14 @@ async function sendOtpEmail(email: string, otp: string, name: string): Promise<b
         </body></html>
       `,
     });
-    return !error;
-  } catch {
+    if (error) {
+      console.error("[otp/email] Resend error:", JSON.stringify(error));
+      return false;
+    }
+    console.log("[otp/email] Sent OK, id:", data?.id);
+    return true;
+  } catch (e: any) {
+    console.error("[otp/email] Exception:", e?.message);
     return false;
   }
 }
