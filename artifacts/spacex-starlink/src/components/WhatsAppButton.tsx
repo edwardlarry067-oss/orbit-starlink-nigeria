@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const WHATSAPP_NUMBER = "16206123994";
 const MESSAGE = encodeURIComponent(
-  "Hi! 👋 I'm interested in OrbitFuture satellite internet service.\n\nCould you help me choose the right plan and walk me through the ordering process?\n\nThank you!"
+  "Hi! 👋 I need help choosing the right Starlink plan.\n\nCould you help me pick the best option for my location and usage?\n\nThank you!"
 );
 
 export function WhatsAppButton() {
@@ -13,15 +13,15 @@ export function WhatsAppButton() {
       href={`https://wa.me/${WHATSAPP_NUMBER}?text=${MESSAGE}`}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Chat on WhatsApp"
+      aria-label="Chat on WhatsApp — Need help choosing a plan?"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="fixed bottom-6 right-4 md:bottom-8 md:right-8 z-30 flex items-center gap-3 transition-all duration-300 hover:scale-105 active:scale-95"
     >
       {hovered && (
-        <div className="hidden md:block bg-[#111] border border-white/10 rounded-xl px-4 py-2.5 shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
-          <p className="text-white text-xs font-black uppercase tracking-widest whitespace-nowrap">Chat on WhatsApp</p>
-          <p className="text-gray-500 text-[10px] mt-0.5">Typically replies in minutes</p>
+        <div className="hidden md:block bg-[#111] border border-white/10 rounded-xl px-4 py-3 shadow-2xl animate-in fade-in slide-in-from-right-2 duration-200">
+          <p className="text-white text-xs font-black uppercase tracking-widest whitespace-nowrap">Need help choosing a plan?</p>
+          <p className="text-gray-500 text-[10px] mt-0.5">Chat with us · Typically replies in minutes</p>
         </div>
       )}
       <div className="relative w-12 h-12 md:w-14 md:h-14 flex items-center justify-center bg-[#25D366] hover:bg-[#20b858] rounded-full shadow-[0_4px_24px_rgba(37,211,102,0.4)] hover:shadow-[0_4px_40px_rgba(37,211,102,0.65)] transition-shadow">
