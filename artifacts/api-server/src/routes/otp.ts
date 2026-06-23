@@ -3,17 +3,25 @@ import { db } from "@workspace/db";
 import { usersTable, otpCodesTable } from "@workspace/db";
 import { eq, and, gt, desc } from "drizzle-orm";
 import jwt from "jsonwebtoken";
+import { randomInt } from "node:crypto";
+import { Resend } from "resend";
 import { JWT_SECRET } from "../middlewares/adminAuth";
 
 const router = Router();
 const JWT_EXPIRES = "30d";
 
 function generateOtp(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(randomInt(100000, 1000000));
 }
 
 function signToken(payload: object): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES });
+}
+
+function getResend(): Resend | null {
+  const key = process.env["RESEND_API_KEY"];
+  if (!key) return null;
+  return new Resend(key);
 }
 
 // In-memory rate limiter for OTP requests
@@ -39,13 +47,11 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 async function sendOtpEmail(email: string, otp: string, name: string): Promise<boolean> {
-  const key = process.env["RESEND_API_KEY"];
-  if (!key) return false;
+  const resend = getResend();
+  if (!resend) return false;
   try {
-    const { Resend } = require("resend");
-    const resend = new Resend(key);
     const fromEmail = process.env["EMAIL_FROM"] ?? "ORBITFUTURE <noreply@orbitfuture.store>";
-    await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: fromEmail,
       to: email,
       subject: `Your OrbitFuture Login Code: ${otp}`,
@@ -54,7 +60,7 @@ async function sendOtpEmail(email: string, otp: string, name: string): Promise<b
         <html><head><meta charset="UTF-8"></head>
         <body style="margin:0;padding:0;background:#050D1A;font-family:'Helvetica Neue',Arial,sans-serif;">
           <div style="max-width:480px;margin:40px auto;background:#0A1628;border:1px solid rgba(0,212,255,0.15);border-radius:16px;padding:40px 32px;text-align:center;">
-            <div style="width:56px;height:56px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+            <div style="width:56px;height:56px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.3);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-bottom:24px;">
               <span style="font-size:24px;">🛰️</span>
             </div>
             <h1 style="color:#fff;font-size:22px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px;">ORBITFUTURE</h1>
@@ -69,7 +75,7 @@ async function sendOtpEmail(email: string, otp: string, name: string): Promise<b
         </body></html>
       `,
     });
-    return true;
+    return !error;
   } catch {
     return false;
   }
@@ -117,7 +123,7 @@ router.post("/auth/otp/send", async (req, res): Promise<void> => {
     if (sent) {
       res.json({ success: true, message: "OTP sent to your email address", emailSent: true });
     } else {
-      // Dev mode: return OTP in response when email service isn't configured
+      // Dev fallback when RESEND_API_KEY is not configured
       res.json({
         success: true,
         message: "OTP generated (email service not configured — dev mode)",
