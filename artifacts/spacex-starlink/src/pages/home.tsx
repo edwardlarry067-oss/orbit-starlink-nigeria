@@ -399,8 +399,8 @@ const TRUST_ITEMS = [
 
 const PHOTO_GALLERY = [
   { src: "/mountain-starlink.png", alt: "Starlink installation in a remote mountain location", label: "Remote / Rural", desc: "Ideal for farms, ranches, and off-grid properties" },
-  { src: "/dish.jpg", alt: "Starlink dish home installation", label: "Home Installation", desc: "Rooftop mounting — clear sky, full signal" },
-  { src: "/dish.png", alt: "Starlink dish setup", label: "Business Setup", desc: "Office and commercial rooftop deployments" },
+  { src: null, alt: "Starlink dish home installation", label: "Home Installation", desc: "Rooftop mounting — clear sky, full signal" },
+  { src: null, alt: "Starlink business rooftop setup", label: "Business Setup", desc: "Office and commercial rooftop deployments" },
   { src: null, alt: "Vehicle satellite internet setup", label: "Vehicle / Mobile", desc: "Trucks, RVs, and overland vehicles" },
   { src: null, alt: "Remote work setup with satellite internet", label: "Remote Work", desc: "Work from anywhere with a clear view of the sky" },
 ];
